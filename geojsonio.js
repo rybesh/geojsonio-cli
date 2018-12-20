@@ -6,7 +6,6 @@ const concat = require('concat-stream'),
       path = require('path'),
       fs = require('fs'),
       os = require('os'),
-      validator = require('@mapbox/geojsonhint'),
       octokit = require('@octokit/rest')(),
       argv = require('minimist')(process.argv.slice(2)),
       MAX_URL_LEN = 150e3,
@@ -29,19 +28,8 @@ function openData(body) {
       'This file is large and will display slowly on geojson.io')
   }
   if (body.length <= MAX_URL_LEN) {
-    const messages = validator.hint(JSON.parse(body.toString()))
-    const errors = messages.filter(
-      message => (! message.hasOwnProperty('level')
-                  || message.level !== 'message')
-    )
-    if (errors.length == 0) {
-      messages.forEach(({message}) => console.log(message))
-      displayResource('#data=data:application/json,' + encodeURIComponent(
-        JSON.stringify(JSON.parse(body.toString()))))
-    } else {
-      console.log('This is not valid GeoJSON. Errors:\n')
-      errors.forEach(({message}) => console.log(message))
-    }
+    displayResource('#data=data:application/json,' + encodeURIComponent(
+      JSON.stringify(JSON.parse(body.toString()))))
   } else {
     octokit.authenticate({type: 'token', token})
     octokit.gists.create({
